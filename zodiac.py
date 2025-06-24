@@ -176,7 +176,7 @@ class ResultScreen(ZodiacFrame):
                              activebackground="#2c2c54",
                              relief="raised", bd=1,
                              padx=4, pady=2,
-                             command=lambda: self.app.show_screen(BirthdayScreen))
+                             command=lambda: self.app.show_screen(TitleScreen))
         self.make_hoverable(back_btn)
         back_btn.place(x=200, y=670, anchor="center")
 
