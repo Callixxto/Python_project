@@ -241,6 +241,6 @@ class ZodiacLogic:
 
 # Starts the app if the script is run directly
 if __name__ == "__main__":
-    root = tk.Tk()
+    root = tk.Tk() # Create the main window
     app = ZodiacApp(root)
     root.mainloop()
