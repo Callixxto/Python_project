@@ -6,24 +6,25 @@ import random
 # Main application controller
 class ZodiacApp:
     def __init__(self, root):
-        self.root = root
-        self.root.title("Zodiac Horoscope")
+        self.root = root # Main window
+        self.root.title("Zodiac Horoscope") 
         self.root.geometry("400x700")  # Fixed window size
-        self.root.resizable(False, False)
+        self.root.resizable(False, False) # Prevent resizing
 
-        self._day = 1
-        self._month = 1
-        self.current_screen = None
+        self._day = 1 # Default day
+        self._month = 1 #Starrt with Jan
+        self.current_screen = None # Initially no screen is shown
 
         # Start with the title screen
         self.show_screen(TitleScreen)
 
     # Replaces current screen with a new one
+    # Using keyword arguments to pass additional parameters for zodiac signs, no need to hardcode
     def show_screen(self, screen_class, **kwargs):
         if self.current_screen:
             self.current_screen.destroy()
-        self.current_screen = screen_class(self, self.root, **kwargs)
-        self.current_screen.pack(fill="both", expand=True)
+        self.current_screen = screen_class(self, self.root, **kwargs) # Create new screen instance
+        self.current_screen.pack(fill="both", expand=True) # Expand to fill available space
 
     # Store user's selected birthday
     def set_birthday(self, day, month):
@@ -39,19 +40,19 @@ class ZodiacApp:
         return ZodiacLogic.determine_sign(self._day, self._month)
 
 
-# Base class for all screens (inherits from tk.Frame)
+# Base class for all screens (inherits from tk.Frame for custom methods and styles)
 class ZodiacFrame(tk.Frame):
     def __init__(self, app, root, *args, **kwargs):
-        super().__init__(root, *args, **kwargs)
-        self.app = app
+        super().__init__(root, *args, **kwargs) 
+        self.app = app # Main app instance
 
     # Load and display a background image
     def load_background(self, path):
-        img = Image.open(path)
-        img = img.resize((400, 700), Image.Resampling.LANCZOS)
-        self.bg_image = ImageTk.PhotoImage(img)
-        self.bg_label = tk.Label(self, image=self.bg_image)
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+        img = Image.open(path) #Using pillow to handle images
+        img = img.resize((400, 700), Image.Resampling.LANCZOS) #Resizing using LANCZOS filter for good quality
+        self.bg_image = ImageTk.PhotoImage(img) #Convert to PhotoImage for Tkinter
+        self.bg_label = tk.Label(self, image=self.bg_image) 
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1) # Fill the entire frame with the image
 
     # Adds a hover color change effect to buttons
     def make_hoverable(self, button, color="#343a65", original="#1b1b3a"):
@@ -59,7 +60,7 @@ class ZodiacFrame(tk.Frame):
         button.bind("<Leave>", lambda e: button.config(bg=original))
 
 
-# First screen the user sees
+# Title screen
 class TitleScreen(ZodiacFrame):
     def __init__(self, app, root):
         super().__init__(app, root)
@@ -74,8 +75,8 @@ class TitleScreen(ZodiacFrame):
                               relief="raised", bd=3,
                               padx=10, pady=5,
                               command=lambda: self.app.show_screen(TarotScreen))
-        self.make_hoverable(tarot_btn)
-        tarot_btn.place(x=200, y=540, anchor="center")
+        self.make_hoverable(tarot_btn) #Inherited from ZodiacFrame
+        tarot_btn.place(x=200, y=540, anchor="center") # Positioning the button on center rather than top-left default
 
         # Zodiac check button (below)
         zodiac_btn = tk.Button(self,
@@ -90,7 +91,7 @@ class TitleScreen(ZodiacFrame):
         zodiac_btn.place(x=200, y=595, anchor="center")
 
 
-# Screen where user selects their birthday
+
 class BirthdayScreen(ZodiacFrame):
     def __init__(self, app, root):
         super().__init__(app, root)
@@ -101,7 +102,7 @@ class BirthdayScreen(ZodiacFrame):
 
         # Style configuration for dropdowns
         style = ttk.Style()
-        style.theme_use("default")
+        style.theme_use("vista") # For more modern look
         style.configure("Custom.TCombobox",
                         fieldbackground="#f7e6c4",
                         background="#f7e6c4",
@@ -232,8 +233,8 @@ class ZodiacLogic:
 
         # Check if date falls within a zodiac range
         for sign, start, end in signs:
-            if ((month == start[1] and day >= start[0]) or
-                (month == end[1] and day <= end[0])):
+            if ((day >= start[0] and month == start[1]) or
+                (day <= end[0] and month == end[1])):
                 return sign.lower()
         return None
 
