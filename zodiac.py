@@ -106,7 +106,7 @@ class BirthdayScreen(ZodiacFrame):
                                  border_color="#4a326f",
                                  button_color="#392759",
                                  text_color="white")
-        day_dd.place(x=75, y=270)
+        day_dd.place(x=76, y=270)
 
         # Month dropdown menu
         months = [
