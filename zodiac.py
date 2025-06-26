@@ -1,30 +1,29 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import customtkinter as ctk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 import random
 
 # Main application controller
 class ZodiacApp:
     def __init__(self, root):
-        self.root = root # Main window
-        self.root.title("Zodiac Horoscope") 
+        self.root = root  # Main window
+        self.root.title("Zodiac Horoscope")
         self.root.geometry("400x700")  # Fixed window size
-        self.root.resizable(False, False) # Prevent resizing
+        self.root.resizable(False, False)  # Prevent resizing
 
-        self._day = 1 # Default day
-        self._month = 1 #Starrt with Jan
-        self.current_screen = None # Initially no screen is shown
+        self._day = 1  # Default day
+        self._month = 1  # Start with January
+        self.current_screen = None  # Initially no screen is shown
 
         # Start with the title screen
         self.show_screen(TitleScreen)
 
     # Replaces current screen with a new one
-    # Using keyword arguments to pass additional parameters for zodiac signs, no need to hardcode
     def show_screen(self, screen_class, **kwargs):
         if self.current_screen:
             self.current_screen.destroy()
-        self.current_screen = screen_class(self, self.root, **kwargs) # Create new screen instance
-        self.current_screen.pack(fill="both", expand=True) # Expand to fill available space
+        self.current_screen = screen_class(self, self.root, **kwargs)  # Create new screen instance
+        self.current_screen.pack(fill="both", expand=True)  # Expand to fill available space
 
     # Store user's selected birthday
     def set_birthday(self, day, month):
@@ -40,24 +39,18 @@ class ZodiacApp:
         return ZodiacLogic.determine_sign(self._day, self._month)
 
 
-# Base class for all screens (inherits from tk.Frame for custom methods and styles)
-class ZodiacFrame(tk.Frame):
+# Base class for all screens (inherits from CTkFrame for custom methods and styles)
+class ZodiacFrame(ctk.CTkFrame):
     def __init__(self, app, root, *args, **kwargs):
-        super().__init__(root, *args, **kwargs) 
-        self.app = app # Main app instance
+        super().__init__(root, *args, **kwargs)
+        self.app = app  # Main app instance
 
     # Load and display a background image
     def load_background(self, path):
-        img = Image.open(path) #Using pillow to handle images
-        img = img.resize((400, 700), Image.Resampling.LANCZOS) #Resizing using LANCZOS filter for good quality
-        self.bg_image = ImageTk.PhotoImage(img) #Convert to PhotoImage for Tkinter
-        self.bg_label = tk.Label(self, image=self.bg_image) 
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1) # Fill the entire frame with the image
-
-    # Adds a hover color change effect to buttons
-    def make_hoverable(self, button, color="#343a65", original="#1b1b3a"):
-        button.bind("<Enter>", lambda e: button.config(bg=color))
-        button.bind("<Leave>", lambda e: button.config(bg=original))
+        img = Image.open(path).resize((400, 700))  # Resize for fixed window
+        self.bg_image = ImageTk.PhotoImage(img)  # Convert to Tk-compatible image
+        self.bg_label = ctk.CTkLabel(self, image=self.bg_image, text="")
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Fill frame
 
 
 # Title screen
@@ -66,76 +59,82 @@ class TitleScreen(ZodiacFrame):
         super().__init__(app, root)
         self.load_background("Title_screen.png")
 
+        font_style = ("Lucida Calligraphy", 16, "bold")
+
         # Tarot button (top)
-        tarot_btn = tk.Button(self,
-                              text="Tarot",
-                              font=("Georgia", 14, "bold"),
-                              bg="#1b1b3a", fg="white",
-                              activebackground="#2c2c54",
-                              relief="raised", bd=3,
-                              padx=10, pady=5,
-                              command=lambda: self.app.show_screen(TarotScreen))
-        self.make_hoverable(tarot_btn) #Inherited from ZodiacFrame
-        tarot_btn.place(x=200, y=540, anchor="center") # Positioning the button on center rather than top-left default
+        tarot_btn = ctk.CTkButton(self,
+                                  text="Tarot",
+                                  font=font_style,
+                                  width=200,
+                                  height=45,
+                                  fg_color="#2d1e45",
+                                  hover_color="#4a326f",
+                                  command=lambda: self.app.show_screen(TarotScreen))
+        tarot_btn.place(x=100, y=540)
 
         # Zodiac check button (below)
-        zodiac_btn = tk.Button(self,
-                               text="Check Your Sign",
-                               font=("Georgia", 14, "bold"),
-                               bg="#1b1b3a", fg="white",
-                               activebackground="#2c2c54",
-                               relief="raised", bd=3,
-                               padx=10, pady=5,
-                               command=lambda: self.app.show_screen(BirthdayScreen))
-        self.make_hoverable(zodiac_btn)
-        zodiac_btn.place(x=200, y=595, anchor="center")
+        zodiac_btn = ctk.CTkButton(self,
+                                   text="Check Your Sign",
+                                   font=font_style,
+                                   width=200,
+                                   height=45,
+                                   fg_color="#2d1e45",
+                                   hover_color="#4a326f",
+                                   command=lambda: self.app.show_screen(BirthdayScreen))
+        zodiac_btn.place(x=100, y=595)
 
 
-
+# Birthday input screen
 class BirthdayScreen(ZodiacFrame):
     def __init__(self, app, root):
         super().__init__(app, root)
         self.load_background("day.png")
 
-        self.day_var = tk.StringVar(value="1")
-        self.month_var = tk.StringVar(value="January")
+        self.day_var = ctk.StringVar(value="1")
+        self.month_var = ctk.StringVar(value="January")
 
-        # Style configuration for dropdowns
-        style = ttk.Style()
-        style.theme_use("vista") # For more modern look
-        style.configure("Custom.TCombobox",
-                        fieldbackground="#f7e6c4",
-                        background="#f7e6c4",
-                        foreground="#1b1b3a",
-                        font=("Georgia", 12),
-                        padding=5)
+        font_style = ("Lucida Calligraphy", 14)
 
         # Day dropdown menu
-        day_dd = ttk.Combobox(self, textvariable=self.day_var,
-                              state="readonly", width=5, style="Custom.TCombobox")
-        day_dd['values'] = list(range(1, 32))
-        day_dd.place(x=70, y=280)
+        day_dd = ctk.CTkComboBox(self,
+                                 variable=self.day_var,
+                                 values=[str(i) for i in range(1, 32)],
+                                 width=80,
+                                 font=font_style,
+                                 dropdown_font=font_style,
+                                 fg_color="#2d1e45",
+                                 border_color="#4a326f",
+                                 button_color="#392759",
+                                 text_color="white")
+        day_dd.place(x=75, y=270)
 
         # Month dropdown menu
-        month_dd = ttk.Combobox(self, textvariable=self.month_var,
-                                state="readonly", width=10, style="Custom.TCombobox")
-        month_dd['values'] = [
+        months = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         ]
-        month_dd.place(x=260, y=280)
+        month_dd = ctk.CTkComboBox(self,
+                                   variable=self.month_var,
+                                   values=months,
+                                   width=130,
+                                   font=font_style,
+                                   dropdown_font=font_style,
+                                   fg_color="#2d1e45",
+                                   border_color="#4a326f",
+                                   button_color="#392759",
+                                   text_color="white")
+        month_dd.place(x=259, y=270)
 
         # Submit button to find zodiac sign
-        submit_btn = tk.Button(self,
-                               text="Find Your Sign",
-                               font=("Georgia", 14, "bold"),
-                               bg="#1b1b3a", fg="white",
-                               activebackground="#2c2c54",
-                               relief="raised", bd=3,
-                               padx=10, pady=5,
-                               command=self.submit)
-        self.make_hoverable(submit_btn)
-        submit_btn.place(x=200, y=595, anchor="center")
+        submit_btn = ctk.CTkButton(self,
+                                   text="Find Your Sign",
+                                   font=("Lucida Calligraphy", 16, "bold"),
+                                   width=220,
+                                   height=45,
+                                   fg_color="#2d1e45",
+                                   hover_color="#4a326f",
+                                   command=self.submit)
+        submit_btn.place(x=90, y=595)
 
     # Extract birthday and show zodiac result
     def submit(self):
@@ -157,7 +156,7 @@ class BirthdayScreen(ZodiacFrame):
             messagebox.showerror("Error", f"Could not determine zodiac: {str(e)}")
 
 
-# Screen that shows the zodiac result
+# Zodiac result screen
 class ResultScreen(ZodiacFrame):
     def __init__(self, app, root, sign):
         super().__init__(app, root)
@@ -169,20 +168,19 @@ class ResultScreen(ZodiacFrame):
             self.app.show_screen(TitleScreen)
             return
 
-        # Back button to return to birthday input
-        back_btn = tk.Button(self,
-                             text="Back",
-                             font=("Georgia", 10),
-                             bg="#1b1b3a", fg="white",
-                             activebackground="#2c2c54",
-                             relief="raised", bd=1,
-                             padx=4, pady=2,
-                             command=lambda: self.app.show_screen(TitleScreen))
-        self.make_hoverable(back_btn)
-        back_btn.place(x=200, y=670, anchor="center")
+        # Back button to return to title screen
+        back_btn = ctk.CTkButton(self,
+                                 text="Back",
+                                 font=("Lucida Calligraphy", 12),
+                                 width=65,
+                                 height=24,
+                                 fg_color="#2d1e45",
+                                 hover_color="#4a326f",
+                                 command=lambda: self.app.show_screen(TitleScreen))
+        back_btn.place(x=160, y=660)
 
 
-# Tarot card screen that displays a random card
+# Tarot screen showing a random image
 class TarotScreen(ZodiacFrame):
     def __init__(self, app, root):
         super().__init__(app, root)
@@ -198,25 +196,24 @@ class TarotScreen(ZodiacFrame):
             return
 
         # Back button to return to title screen
-        back_btn = tk.Button(self,
-                             text="Back",
-                             font=("Georgia", 10),
-                             bg="#1b1b3a", fg="white",
-                             activebackground="#2c2c54",
-                             relief="raised", bd=1,
-                             padx=4, pady=2,
-                             command=lambda: self.app.show_screen(TitleScreen))
-        self.make_hoverable(back_btn)
-        back_btn.place(x=200, y=670, anchor="center")
+        back_btn = ctk.CTkButton(self,
+                                 text="Back",
+                                 font=("Lucida Calligraphy", 12),
+                                 width=65,
+                                 height=24,
+                                 fg_color="#2d1e45",
+                                 hover_color="#4a326f",
+                                 command=lambda: self.app.show_screen(TitleScreen))
+        back_btn.place(x=160, y=660)
 
 
-# Logic for determining zodiac sign based on birthday
+# Logic to determine zodiac sign based on birthday
 class ZodiacLogic:
     @staticmethod
     def determine_sign(day, month):
         # Each zodiac sign has a start and end date (day, month)
         signs = [
-            ("Capricorn", (22, 12), (19, 1)),
+            ("Capricorn", (1, 1), (19, 1)),
             ("Aquarius", (20, 1), (18, 2)),
             ("Pisces", (19, 2), (20, 3)),
             ("Aries", (21, 3), (19, 4)),
@@ -228,7 +225,7 @@ class ZodiacLogic:
             ("Libra", (23, 9), (22, 10)),
             ("Scorpio", (23, 10), (21, 11)),
             ("Sagittarius", (22, 11), (21, 12)),
-            ("Capricorn", (22, 12), (31, 12)),  # End of year wraparound
+            ("Capricorn", (22, 12), (31, 12))  # End of year wraparound
         ]
 
         # Check if date falls within a zodiac range
@@ -239,8 +236,8 @@ class ZodiacLogic:
         return None
 
 
-# Starts the app if the script is run directly
+# Run the app
 if __name__ == "__main__":
-    root = tk.Tk() # Create the main window
+    root = ctk.CTk()  # Create main window
     app = ZodiacApp(root)
     root.mainloop()
